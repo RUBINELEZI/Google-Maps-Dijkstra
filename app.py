@@ -18,7 +18,7 @@ api_file = open('api-key.txt', 'r')
 api_key = api_file.read()
 api_file.close()
 
-#codrdintes
+#codrdintes from google
 A = '41.331989, 19.783476'
 B = '41.322117, 19.791662'
 C = '41.339077, 19.786791'
@@ -47,10 +47,112 @@ DH = requests.get(url + "origins=" + D + "&destinations=" + H + "&key=" + api_ke
 AC = requests.get(url + "origins=" + A + "&destinations=" + C + "&key=" + api_key).json()["rows"][0]["elements"][0]["duration"]["value"]
 CD = requests.get(url + "origins=" + C + "&destinations=" + D + "&key=" + api_key).json()["rows"][0]["elements"][0]["duration"]["value"]
 HJ = requests.get(url + "origins=" + H + "&destinations=" + J + "&key=" + api_key).json()["rows"][0]["elements"][0]["duration"]["value"]
+FE = requests.get(url + "origins=" + F + "&destinations=" + E + "&key=" + api_key).json()["rows"][0]["elements"][0]["duration"]["value"] 
+IG = requests.get(url + "origins=" + I + "&destinations=" + G + "&key=" + api_key).json()["rows"][0]["elements"][0]["duration"]["value"]
+
+# IMPLEMENT DIJKSTRA ALGORITHM
+
+inf = float('inf')
+# starting point
+start = 'J'
+stop = 'A'
+
+# BUILD THE GRAPH
+graph = {}
+
+graph['A'] = {}
+graph['A']['B'] = AB
+graph['A']['C'] = AC
+
+graph['B'] = {}
+graph['B']['E'] = BE
+graph['B']['F'] = BF
+graph['B']['A'] = AB
+
+graph['E'] = {}
+graph['E']['G'] = EG
+# NOTE I AM USING THE SAME VALUE FROM E TO F AS F TO E
+graph['E']['F'] = FE 
+
+graph['G'] = {}
+graph['G']['J'] = GJ
+graph['G']['D'] = DG
+graph['G']['I'] = IG
+
+graph['F'] = {}
+graph['F']['E'] = FE
+graph['F']['I'] = FI
+graph['F']['B'] = BF
+
+graph['I'] = {}
+graph['I']['J'] = IJ
+graph['I']['G'] = IG
+graph['I']['F'] = FI
+
+graph['C'] = {}
+graph['C']['D'] = CD
+graph['C']['A'] = AC
+
+graph['D'] = {}
+graph['D']['G'] = DG
+graph['D']['H'] = DH
+graph['D']['C'] = CD
+
+graph['H'] = {}
+graph['H']['J'] = HJ
+graph['H']['D'] = DH
+
+graph['J'] = {}
+graph['J']['G'] = GJ
+graph['J']['H'] = HJ
+graph['J']['I'] = IJ
+
+costs = {}
+parents = {}
+for node in graph:
+    # we assume that costs is infinite until we go to that node
+    costs[node] = inf
+    parents[node] = {}
+costs[start] = 0
+
+def find_cheapest_node(costs, not_checked):
+    cheapest_node = None
+    lowest_cost = inf
+    for node in not_checked:
+        if costs[node] <= lowest_cost:
+            lowest_cost = costs[node]
+            cheapest_node = node
+    return cheapest_node
+
+if __name__ == '__main__':
+    not_checked = [node for node in costs]
+    node = find_cheapest_node(costs, not_checked)
+    while not_checked:
+        print(f'Not checked: {not_checked}')
+        cost = costs[node]
+        child_cost = graph[node]
+        for c in child_cost:
+            if costs[c] > cost + child_cost[c]:
+                costs[c] = cost + child_cost[c]
+                parents[c] = node
+        
+        not_checked.pop(not_checked.index(node))
+        node = find_cheapest_node(costs, not_checked)
+
+print(f'Costs: {costs}')
+print(f'The time to go from {start} to {stop} is {costs[stop]} SECONDS ')
+
+if costs[stop] < inf:
+    path = [stop]
+    i = 0
+    while start not in path:
+        path.append(parents[path[i]])
+        i += 1
+    print(f'The Shortest path is {path[::-1]}')
+else:
+    print('A path could not be found')
 
 
-G = nx.Graph()
-e = [('A','B',AB),('B','E',BE),('B','F',BF),('E','G',EG),('G','J',GJ),('F','I',FI),('I','J',IJ),('D','G',DG),('D','H',DH),('A','C',AC),('C','D',CD),('H','J',HJ),]
-G.add_weighted_edges_from(e)
-print(nx.dijkstra_path(G,'J','A'))
+
+
 
